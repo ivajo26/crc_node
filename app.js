@@ -31,4 +31,24 @@ io.sockets.on('connection', function(socket) {
     function updateUsernames() {
         io.sockets.emit('usernames', clients);
     }
+
+    socket.on('user_connect', function(data){
+      for(client in clients){
+        if(client == data['user']){
+          id_connect = clients[client].id
+        }
+      }
+      io.sockets.socket(id_connect).emit('ok_connect', data['divisor']);
+    });
+
+    socket.on('send_message', function(data){
+      for(client in clients){
+        if(client == data['user']){
+          id_connect = clients[client].id
+        }
+      }
+      io.sockets.socket(id_connect).emit('receive_message', data['message']);
+    });
+
+
 });

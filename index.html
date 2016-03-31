@@ -30,29 +30,32 @@
           </div>
         </div>
         <div id="message" class="eight wide column hidden">
-          <div class="ui form">
-            <input type="text" name="divisor" value="" placeholder="Insert Your Divisor" class="ui form" id="divisor">
+          <div id='patern_divisor' class="ui form">
+            <input type="text" name="divisor" value="" placeholder="Insert Your Divisor" class="ui form" id='divisor'>
           </div>
             <div class="ui fluid card">
               <div class="content">
-                <!-- <img class="right floated mini ui image" src="/images/avatar/large/jenny.jpg"> -->
                 <div class="header">
                   Send your message
                 </div>
-                <div class="meta">
+                <div class="meta" id='ok_divisor'>
                 </div>
+                <form id='formMessage' action="#" class="ui form">
                 <div class="description">
-                  <form action="" class="ui form">
+                    <div id='receive'>
+
+                    </div>
                     <input type="text" name="message" value="" placeholder="Insert Your Message">
-                  </form>
                 </div>
               </div>
               <div class="extra content">
                 <div class="ui two buttons">
-                  <div class="ui  green button">Enviar</div>
+                  <button class="ui button green">Connected</button>
+
                   <div class="ui  red button">Decline</div>
                 </div>
               </div>
+              </form>
             </div>
         </div>
 
@@ -65,6 +68,10 @@
           $cards_users = $('#cards_users');
           socket = io.connect(),
           $formUser = $('#formUser'),
+          $formMessage = $('#formMessage'),
+          $divisor = $('#divisor'),
+          $user_connect =  '',
+          $divisor_connect = '',
           $username = '';
 
           $formUser.submit(function(event) {
@@ -87,6 +94,24 @@
             return false;
           });
 
+          $formMessage.submit(function(event) {
+            formData = $(this).serializeArray();
+            for(var i in formData){
+              if(formData[i].name == 'message' && formData[i].value != '' && formData[i].value.match(/^[0-1]*$/)){
+                //Ojo Aplicar Crc
+                $send_data = {user:$user_connect, message:formData[i].value};
+                socket.emit('send_message', $send_data);
+              }
+            }
+            event.preventDefault();
+            return false;
+          });
+
+          socket.on('receive_message', function(data) {
+              console.log(data);
+              $('#receive').innerHTML += data;
+          });
+
           socket.on('usernames', function(data) {
                     var html = '';
                     for (var username in data) {
@@ -96,9 +121,25 @@
                     }
                     $cards_users.html(html);
                 });
-      function connect(id){
-        console.log(id);
-      }
+
+          socket.on('ok_connect', function(data){
+            $divisor_connect = data;
+            $('#ok_divisor')[0].innerHTML = $divisor_connect;
+            $('#patern_divisor').addClass('hidden');
+          });
+
+          function connect(id){
+            if($divisor[0].value != '' && $divisor[0].value.match(/^[0-1]*$/)){
+                $user_connect = id;
+                $divisor_connect = $divisor[0].value;
+                data_connect = { user:$user_connect, divisor:$divisor_connect};
+                $('#ok_divisor')[0].innerHTML = $divisor_connect;
+                $('#patern_divisor').addClass('hidden');
+                socket.emit('user_connect', data_connect);
+            }
+          }
+
+
     </script>
   </body>
 </html>
