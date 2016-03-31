@@ -25,13 +25,14 @@
           </div>
         </form>
       </div>
-
         <div id="list" class="four wide column hidden">
           <div id="cards_users" class="ui cards">
           </div>
         </div>
         <div id="message" class="eight wide column hidden">
-          <!-- <div class="ui cards"> -->
+          <div class="ui form">
+            <input type="text" name="divisor" value="" placeholder="Insert Your Divisor" class="ui form" id="divisor">
+          </div>
             <div class="ui fluid card">
               <div class="content">
                 <!-- <img class="right floated mini ui image" src="/images/avatar/large/jenny.jpg"> -->
@@ -39,7 +40,6 @@
                   Send your message
                 </div>
                 <div class="meta">
-
                 </div>
                 <div class="description">
                   <form action="" class="ui form">
@@ -54,7 +54,6 @@
                 </div>
               </div>
             </div>
-          <!-- </div> -->
         </div>
 
     </div>
@@ -92,13 +91,14 @@
                     var html = '';
                     for (var username in data) {
                         if($username != username){
-                          html += '<div class="card"><div class="content"><div class="header">'+username+'</div><div class="description"></div></div><div id="connect" data-user="'+username+'" class="ui bottom attached button green"><i class="add icon"></i>Connected</div></div>';
+                          html += '<div class="card"><div class="content"><div class="header">'+username+'</div><div class="description"></div></div><button id="'+username+'" class="ui bottom attached button green" onclick="connect(this.id)"><i class="add icon"></i>Connected</button></div>';
                         }
                     }
                     $cards_users.html(html);
                 });
-
-
+      function connect(id){
+        console.log(id);
+      }
     </script>
   </body>
 </html>
