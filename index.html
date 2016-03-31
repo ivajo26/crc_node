@@ -42,16 +42,13 @@
                 </div>
                 <form id='formMessage' action="#" class="ui form">
                 <div class="description">
-                    <div id='receive'>
-
-                    </div>
+                    <div id='receive' class="ui list" ></div>
                     <input type="text" name="message" value="" placeholder="Insert Your Message">
                 </div>
               </div>
               <div class="extra content">
                 <div class="ui two buttons">
-                  <button class="ui button green">Connected</button>
-
+                  <button class="ui button green">Enviar</button>
                   <div class="ui  red button">Decline</div>
                 </div>
               </div>
@@ -98,8 +95,9 @@
             formData = $(this).serializeArray();
             for(var i in formData){
               if(formData[i].name == 'message' && formData[i].value != '' && formData[i].value.match(/^[0-1]*$/)){
-                //Ojo Aplicar Crc
-                $send_data = {user:$user_connect, message:formData[i].value};
+                crc_apply = crc(formData[i].value, $divisor_connect);
+                message = crc_apply['message'];
+                $send_data = {user:$user_connect, message:message};
                 socket.emit('send_message', $send_data);
               }
             }
@@ -107,9 +105,12 @@
             return false;
           });
 
-          socket.on('receive_message', function(data) {
-              console.log(data);
-              $('#receive').innerHTML += data;
+          socket.on('receive_message', function(data){
+              var html = $('#receive').html();
+              crc_apply = crc(data, $divisor_connect);
+              if(check_message(crc_apply['crc'])){icon = 'check green'}else {icon = 'close red'}
+              html += '<div class="item"><i class="'+ icon +' icon"></i><div class="content">'+clean_message(crc_apply['message'],$divisor_connect)+'</div> </div>';
+              $('#receive').html(html);
           });
 
           socket.on('usernames', function(data) {
@@ -123,7 +124,8 @@
                 });
 
           socket.on('ok_connect', function(data){
-            $divisor_connect = data;
+            $user_connect = data['user'];
+            $divisor_connect = data['divisor'];
             $('#ok_divisor')[0].innerHTML = $divisor_connect;
             $('#patern_divisor').addClass('hidden');
           });
@@ -139,7 +141,39 @@
             }
           }
 
+          function xor(g,cs) {
+            var N = g.length
+            for (c=1;c<N;c++) {if(cs[c] == g[c]) {cs[c] = '0';}else {cs[c] = '1';}}
+            return cs
+          }
 
+          function crc(t,g) {
+            var e,c,cs=[],a = t.length,N = g.length;
+            //Add bit divisor for message
+            for(e=a;e<a+N-1;e++){t+='0';}
+            for (e=0;e<N;e++){cs[e]=t[e];}
+            do{
+              if (cs[0]=='1'){cs = xor(g,cs);}
+              for (c=0;c<N-1;c++){cs[c]=cs[c+1];}
+              cs[c]=t[e++]
+            }while(e<=a+N-1);
+            res = t.split('');
+            for (e=a;e<a+N-1;e++){res[e]=cs[e-a];}
+            t = res.join('');
+            data = {message:t, crc:cs.join('')}
+            return data
+          }
+
+          function check_message(crc) {
+            for(i in crc){if(crc[i]==1){return false;}}
+            return true;
+          }
+
+          function clean_message(message, divisor) {
+            message_final='';
+            for(i=0;i<message.length-((divisor.length-1)*2);i++){message_final+=message[i];}
+            return message_final;
+          }
     </script>
   </body>
 </html>

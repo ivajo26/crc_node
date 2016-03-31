@@ -38,7 +38,8 @@ io.sockets.on('connection', function(socket) {
           id_connect = clients[client].id
         }
       }
-      io.sockets.socket(id_connect).emit('ok_connect', data['divisor']);
+      info_connect = {user:socket.username, divisor:data['divisor']}
+      io.sockets.socket(id_connect).emit('ok_connect', info_connect);
     });
 
     socket.on('send_message', function(data){
