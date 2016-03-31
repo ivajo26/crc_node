@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>CRC - Node.js and Socket.io</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.1.8/semantic.min.css">
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.1.8/semantic.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+    <style media="screen">
+      .hidden{
+        display: none !important;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="ui grid page" style="margin-top: 50px;">
+      <div id='user' class="sixteen wide column">
+        <form id='formUser' class="ui form" action="#">
+          <div class="ui action input">
+            <input type="text" placeholder="Your Username" name="username">
+            <button class="ui green right labeled icon button">
+              <i class="plus icon"></i>
+              Iniciar
+            </button>
+          </div>
+        </form>
+      </div>
+
+        <div id="list" class="four wide column hidden">
+          <div id="cards_users" class="ui cards">
+          </div>
+        </div>
+        <div id="message" class="eight wide column hidden">
+          <!-- <div class="ui cards"> -->
+            <div class="ui fluid card">
+              <div class="content">
+                <!-- <img class="right floated mini ui image" src="/images/avatar/large/jenny.jpg"> -->
+                <div class="header">
+                  Send your message
+                </div>
+                <div class="meta">
+
+                </div>
+                <div class="description">
+                  <form action="" class="ui form">
+                    <input type="text" name="message" value="" placeholder="Insert Your Message">
+                  </form>
+                </div>
+              </div>
+              <div class="extra content">
+                <div class="ui two buttons">
+                  <div class="ui  green button">Enviar</div>
+                  <div class="ui  red button">Decline</div>
+                </div>
+              </div>
+            </div>
+          <!-- </div> -->
+        </div>
+
+    </div>
+    <script src="/socket.io/socket.io.js"></script>
+    <script type="text/javascript">
+      var $user = $('#user'),
+          $message = $('#message'),
+          $list = $('#list'),
+          $cards_users = $('#cards_users');
+          socket = io.connect(),
+          $formUser = $('#formUser'),
+          $username = '';
+
+          $formUser.submit(function(event) {
+            formData = $(this).serializeArray();
+            for(var i in formData){
+              if(formData[i].name == 'username' && formData[i].value != '' && formData[i].value.match(/^[a-zA-Z]*$/)){
+                $username = formData[i].value;
+                socket.emit('new user', formData[i].value, function(data) {
+                       if(data) {
+                           $message.removeClass('hidden');
+                           $list.removeClass('hidden');
+                           $user.addClass('hidden');
+                       } else {
+                          $username = '';
+                       }
+                   });
+              }
+            }
+            event.preventDefault();
+            return false;
+          });
+
+          socket.on('usernames', function(data) {
+                    var html = '';
+                    for (var username in data) {
+                        if($username != username){
+                          html += '<div class="card"><div class="content"><div class="header">'+username+'</div><div class="description"></div></div><div id="connect" data-user="'+username+'" class="ui bottom attached button green"><i class="add icon"></i>Connected</div></div>';
+                        }
+                    }
+                    $cards_users.html(html);
+                });
+
+
+    </script>
+  </body>
+</html>
