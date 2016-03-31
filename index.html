@@ -49,10 +49,11 @@
               <div class="extra content">
                 <div class="ui two buttons">
                   <button class="ui button green">Enviar</button>
-                  <div class="ui  red button">Decline</div>
+                  </form>
+                  <button class="ui button red" onclick="disconnect()">Desconectar</button>
                 </div>
               </div>
-              </form>
+
             </div>
         </div>
 
@@ -117,7 +118,12 @@
                     var html = '';
                     for (var username in data) {
                         if($username != username){
-                          html += '<div class="card"><div class="content"><div class="header">'+username+'</div><div class="description"></div></div><button id="'+username+'" class="ui bottom attached button green" onclick="connect(this.id)"><i class="add icon"></i>Connected</button></div>';
+                          if (data[username].connect == false) {
+                            html += '<div class="card"><div class="content"><div class="header">'+username+'</div><div class="description"></div></div><button id="'+username+'" class="ui bottom attached button green" onclick="connect(this.id)"><i class="add icon"></i>Connected</button></div>';
+                          }else{
+                            html += '<div class="card"><div class="content"><div class="header">'+username+'</div><div class="description"></div></div><button id="'+username+'" class="ui bottom attached button red""><i class="close icon"></i>Connected</button></div>'
+                          }
+
                         }
                     }
                     $cards_users.html(html);
@@ -130,6 +136,15 @@
             $('#patern_divisor').addClass('hidden');
           });
 
+          socket.on('user_disconnect', function(data) {
+            $divisor[0].value = '';
+            $('#patern_divisor').removeClass('hidden');
+            $user_connect =  '';
+            $divisor_connect = '';
+            $('#ok_divisor')[0].innerHTML = '';
+            $('#receive').html('');
+          });
+
           function connect(id){
             if($divisor[0].value != '' && $divisor[0].value.match(/^[0-1]*$/)){
                 $user_connect = id;
@@ -138,6 +153,16 @@
                 $('#ok_divisor')[0].innerHTML = $divisor_connect;
                 $('#patern_divisor').addClass('hidden');
                 socket.emit('user_connect', data_connect);
+            }
+          }
+
+          function disconnect() {
+            if ($user_connect != '') {
+              socket.emit('user_disconnect', $user_connect);
+              $('#patern_divisor').removeClass('hidden');
+              $divisor[0].value = '';
+              $('#ok_divisor')[0].innerHTML = '';
+              $('#receive').html('');
             }
           }
 

@@ -24,10 +24,24 @@ io.sockets.on('connection', function(socket) {
 
     socket.on('disconnect', function(data) {
         if(!socket.username) return;
+        if ((clients[socket.username].connect != false)) {
+          io.sockets.socket(clients[socket.username].connect).emit('user_disconnect', socket.username);
+          for(client in clients){
+            if (clients[client].id == clients[socket.username].connect) {
+              clients[client].connect = '';
+            }
+          }
+        }
         delete clients[socket.username];
         updateUsernames();
     });
 
+    socket.on('user_disconnect', function(data) {
+      clients[data].connect = '';      
+      io.sockets.socket(clients[socket.username].connect).emit('user_disconnect', socket.username);
+      clients[socket.username].connect = '';
+      updateUsernames();
+    });
     function updateUsernames() {
         io.sockets.emit('usernames', clients);
     }
@@ -36,8 +50,11 @@ io.sockets.on('connection', function(socket) {
       for(client in clients){
         if(client == data['user']){
           id_connect = clients[client].id
+          clients[client].connect = socket.id;
+          clients[socket.username].connect = clients[client].id;
         }
       }
+      updateUsernames();
       info_connect = {user:socket.username, divisor:data['divisor']}
       io.sockets.socket(id_connect).emit('ok_connect', info_connect);
     });
